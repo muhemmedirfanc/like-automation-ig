@@ -87,33 +87,37 @@ prompt.message = '';
 
             for (const media of medias) {
 
+                if (!media.has_liked) {
 
-                if (moment(new Date(media.taken_at * 1000).getTime()).isAfter(moment(new Date().getTime() - 60000))) {
+                    if (moment(new Date(media.taken_at * 1000).getTime()).isAfter(moment(new Date().getTime() - 60000))) {
 
-                    console.log(chalk.blueBright('found just now post.'))
+                        console.log(chalk.blueBright('found just now post.'))
 
-                    let { status } = await ig.media.like({ mediaId: media.id, moduleInfo: { module_name: "feed_timeline" }, d: 0 }).catch((error) => {
-                        console.log(chalk.red(error.message))
+                        let { status } = await ig.media.like({ mediaId: media.id, moduleInfo: { module_name: "feed_timeline" }, d: 0 }).catch((error) => {
+                            console.log(chalk.red(error.message))
 
-                        console.log(chalk.redBright('Post like failed.'))
+                            console.log(chalk.redBright('Post like failed.'))
 
-                        if (error instanceof IgLoginRequiredError || error instanceof IgUserHasLoggedOutError || error instanceof IgCheckpointError) {
+                            if (error instanceof IgLoginRequiredError || error instanceof IgUserHasLoggedOutError || error instanceof IgCheckpointError) {
 
-                            unlinkSync(tokenPath);
-                            console.log(chalk.red('account relogin required.'));
-                            process.exit()
+                                unlinkSync(tokenPath);
+                                console.log(chalk.red('account relogin required.'));
+                                process.exit()
 
+                            }
+                        })
+
+                        if (status) {
+                            console.log(chalk.green(`Post liked successfully ===> ${media.user.username} `))
                         }
-                    })
 
-                    if (status) {
-                        console.log(chalk.green(`Post liked successfully ===> ${media.user.username} `))
+                    } else {
+
+                        console.log(chalk.yellow(`posted ${moment(new Date(media.taken_at * 1000).getTime()).fromNow()}`))
                     }
-
-                } else {
-
-                    console.log(chalk.yellow(`posted ${moment(new Date(media.taken_at * 1000).getTime()).fromNow()}`))
                 }
+
+
             }
 
             console.log(chalk.magenta(`next run ${moment(new Date().getTime() + parseInt(sleep) * 1000).fromNow()}`))
